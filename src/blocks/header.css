@@ -1,0 +1,14 @@
+.header{
+  border-bottom: 1px solid rgba(84, 84, 84, 0.7);
+  padding-top: 45px;
+  padding-bottom: 41px;
+}
+@media screen and (max-width: 900px){
+  .header{
+    padding: 28px 0 32px 26px;
+  }
+  .header__logo{
+    width: 126px;
+    height: 24px;
+  }
+}

@@ -1,8 +1,23 @@
-Around the U.S. project on React, featuring authorization and registration.
+# Project 14: React-Around-Auth
+### Overview  
+14-th project on Practicum  
+  
+**Intro**    
+  
+This is a photo gallery  
+  
+**Technologies I used:**  
+_HTML_  
+_CSS Flexbox_  
+_CSS Grid Layout_  
+_BEM methodology_
+_Javascript_
+_ReactJS_
+_Fetch API_
 
-This repository will contain your own front-end project on React with added authorization and registration features.
-Start working with your previously built front end code from Sprint 11.
+**IDE I used:**
+_Visual Studio Code_
+  
+* [Link to the project on GitHub Pages](https://nigberg.github.io/react-around-auth)  
+  
 
-All authorization, registration and token requests must go through to the server running on [https://register.nomoreparties.co](https://register.nomoreparties.co/).
-
-Good luck!
