@@ -34,7 +34,7 @@
   visibility: hidden;
 }
 .form__input-error_active{
-  visibility: visible;
+  visibility: visible;  
 }
 .form__submit-button{
   box-sizing: border-box;

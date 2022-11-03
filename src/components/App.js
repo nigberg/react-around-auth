@@ -1,164 +1,256 @@
-import Header from "./Header";
-import Main from "./Main";
-import Footer from "./Footer";
-import ImagePopup from "./ImagePopup";
-import PopupWithForm from "./PopupWithForm";
-import EditProfilePopup from "./EditProfilePopup";
-import EditAvatarPopup from "./EditAvatarPopup";
-import AddPlacePopup from "./AddPlacePopup";
-import { useState, useEffect } from "react";
-import api from "../utils/api";
-import { CurrentUserContext } from "../contexts/CurrentUserContext";
+import Header from './Header'
+import Main from './Main'
+import Footer from './Footer'
+import ImagePopup from './ImagePopup'
+import PopupWithForm from './PopupWithForm'
+import EditProfilePopup from './EditProfilePopup'
+import EditAvatarPopup from './EditAvatarPopup'
+import AddPlacePopup from './AddPlacePopup'
+import { useState, useEffect } from 'react'
+import { api } from '../utils/api'
+import { auth } from '../utils/auth'
+import { CurrentUserContext } from '../contexts/CurrentUserContext'
+import { Switch, Route, useHistory } from 'react-router-dom'
+import Login from './Login'
+import Register from './Register'
+import ProtectedRoute from './ProtectedRoute'
+import InfoToolTip from './InfoTooltip'
 
 function App() {
-  const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = useState(false);
-  const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false);
-  const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false);
-  const [isCardPopupOpen, setIsCardPopupOpen] = useState(false);
-  const [selectedCard, setSelectedCard] = useState({});
-  const [currentUser, setCurrentUser] = useState({});
-  const [cards, setCards] = useState([]);
-  const [waiting, setWaiting] = useState(false);
+  const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] = useState(false)
+  const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = useState(false)
+  const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false)
+  const [isCardPopupOpen, setIsCardPopupOpen] = useState(false)
+  const [isInfoTooltipOpen, setIsInfoTooltipOpen] = useState(false)
+  const [selectedCard, setSelectedCard] = useState({})
+  const [currentUser, setCurrentUser] = useState({})
+  const [cards, setCards] = useState([])
+  const [waiting, setWaiting] = useState(false)
+  const [loggedIn, setLoggedIn] = useState(false)
+  const [signedUp, setSignedUp] = useState(false)
+
+  const history = useHistory()
 
   //Current user data fetch on mounting
   useEffect(() => {
     api
       .getUserInfo()
       .then((res) => {
-        setCurrentUser(res);
+        setCurrentUser(res)
       })
-      .catch(console.log);
-  }, []);
-
+      .catch(console.log)
+  }, [])
+  
   //Cards fetching
   useEffect(() => {
     api
       .getInitialCards()
       .then((res) => {
-        setCards(res);
+        setCards(res)
       })
-      .catch(console.log);
-  }, []);
+      .catch(console.log)
+  }, [])
+
+  //Token check
+  useEffect(() => {
+    const jwt=localStorage.getItem('jwt')
+    if(jwt){
+      auth.validateToken(jwt)
+      .then((res) => {
+        if(res){
+          setCurrentUser({...currentUser, email: res.data.email})
+          setLoggedIn(true)
+          history.push('/')          
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
+    }
+  }, [])
 
   const handleEditAvatarClick = () => {
-    setIsEditAvatarPopupOpen(true);
-  };
+    setIsEditAvatarPopupOpen(true)
+  }
 
   const handleEditProfileClick = () => {
-    setIsEditProfilePopupOpen(true);
-  };
+    setIsEditProfilePopupOpen(true)
+  }
 
   const handleAddPlaceClick = () => {
-    setIsAddPlacePopupOpen(true);
-  };
+    setIsAddPlacePopupOpen(true)
+  }
 
   const handleCardClick = (card) => {
-    setIsCardPopupOpen(true);
-    setSelectedCard(card);
-  };
+    setIsCardPopupOpen(true)
+    setSelectedCard(card)
+  }
 
   const handleCardLike = (card) => {
-    const isLiked = card.likes.some((user) => user._id === currentUser._id);
+    const isLiked = card.likes.some((user) => user._id === currentUser._id)
 
     api
       .changeLikeCardStatus(card._id, isLiked)
       .then((newCard) => {
         setCards((state) =>
           state.map((currentCard) =>
-            currentCard._id === card._id ? newCard : currentCard
-          )
-        );
+            currentCard._id === card._id ? newCard : currentCard,
+          ),
+        )
       })
-      .catch(console.log);
-  };
+      .catch(console.log)
+  }
 
   const handleCardDelete = (card) => {
     api
       .deleteCard(card._id)
       .then(() => {
-        setCards(cards.filter((item) => item._id !== card._id));
+        setCards(cards.filter((item) => item._id !== card._id))
       })
-      .catch(console.log);
-  };
+      .catch(console.log)
+  }
 
   const closeAllPopups = () => {
-    setIsEditAvatarPopupOpen(false);
-    setIsAddPlacePopupOpen(false);
-    setIsCardPopupOpen(false);
-    setIsEditProfilePopupOpen(false);
-    setSelectedCard({});
-  };
+    setIsEditAvatarPopupOpen(false)
+    setIsAddPlacePopupOpen(false)
+    setIsCardPopupOpen(false)
+    setIsEditProfilePopupOpen(false)
+    setIsInfoTooltipOpen(false)
+    setSelectedCard({})
+  }
 
   //closing modal windows by pressing escape key
   useEffect(() => {
     const closeByEscape = (e) => {
-      if (e.key === "Escape") {
-        closeAllPopups();
+      if (e.key === 'Escape') {
+        closeAllPopups()
       }
-    };
+    }
 
-    document.addEventListener("keydown", closeByEscape);
+    document.addEventListener('keydown', closeByEscape)
 
     //event listener removing on unmounting
-    return () => document.removeEventListener("keydown", closeByEscape);
-  }, []);
+    return () => document.removeEventListener('keydown', closeByEscape)
+  }, [])
 
   function handleUpdateUser({ name, about }) {
-    setWaiting(true);
+    setWaiting(true)
     api
       .editProfile({ name, about })
       .then((newUserInfo) => {
-        console.log(waiting);
-        setCurrentUser(newUserInfo);
-        closeAllPopups();
+        console.log(waiting)
+        setCurrentUser(newUserInfo)
+        closeAllPopups()
       })
       .catch(console.log)
       .finally(() => {
-        setWaiting(false);
-      });
+        setWaiting(false)
+      })
   }
 
   function hanldeUpdateAvatar(avatarUrl) {
-    setWaiting(true);
+    setWaiting(true)
     api
       .setAvatar(avatarUrl)
       .then((newUserInfo) => {
-        setCurrentUser(newUserInfo);
-        closeAllPopups();
+        setCurrentUser(newUserInfo)
+        closeAllPopups()
       })
       .catch(console.log)
       .finally(() => {
-        setWaiting(false);
-      });
+        setWaiting(false)
+      })
   }
 
   function handleAddPlaceSubmit({ name, link }) {
-    setWaiting(true);
+    setWaiting(true)
     api
       .addNewCard({ name, link })
       .then((newCard) => {
-        setCards([newCard, ...cards]);
-        closeAllPopups();
+        setCards([newCard, ...cards])
+        closeAllPopups()
       })
       .catch(console.log)
       .finally(() => {
-        setWaiting(false);
-      });
+        setWaiting(false)
+      })
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('jwt');
+    setLoggedIn(false)
+    history.push('/login');
+  }
+
+  function handleLogin(userData) {
+    setWaiting(true)
+    auth
+      .authenticate(userData)
+      .then((user) => {
+        localStorage.setItem('jwt', user.token)
+        setLoggedIn(true)
+        setCurrentUser({...currentUser, email: userData.email})  
+        history.push('/')      
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+      .finally(() => {
+        setWaiting(false)        
+      })
+  }
+
+  function handleSignup(userData) {
+    setWaiting(true)
+    auth
+      .register(userData)
+      .then((user) => {
+        if (user.data._id) {
+          setSignedUp(true)
+        } else{
+           setSignedUp(false)           
+        }
+      })
+      .catch(() => {
+        setSignedUp(false)
+      })
+      .finally(() => {
+        setWaiting(false)
+        setIsInfoTooltipOpen(true)
+      })
   }
 
   return (
     <div className="page">
       <CurrentUserContext.Provider value={currentUser}>
-        <Header />
-        <Main
-          cards={cards}
-          onCardClick={handleCardClick}
-          onEditProfileClick={handleEditProfileClick}
-          onEditAvatarClick={handleEditAvatarClick}
-          onAddPlaceClick={handleAddPlaceClick}
-          onCardLike={handleCardLike}
-          onCardDelete={handleCardDelete}
-        />
+        <Header loggedIn={loggedIn} handleLogout={handleLogout} />
+        <Switch>
+          <Route exact path={'/signin'}>
+            <Login
+              loggedIn={loggedIn}
+              isWaiting={waiting}
+              onSubmit={handleLogin}
+            />
+          </Route>
+          <Route exact path={'/signup'}>
+            <Register
+              signedUp={signedUp}
+              isWaiting={waiting}
+              onSubmit={handleSignup}
+            />
+          </Route>
+          <ProtectedRoute loggedIn={loggedIn}>
+            <Main
+              cards={cards}
+              onCardClick={handleCardClick}
+              onEditProfileClick={handleEditProfileClick}
+              onEditAvatarClick={handleEditAvatarClick}
+              onAddPlaceClick={handleAddPlaceClick}
+              onCardLike={handleCardLike}
+              onCardDelete={handleCardDelete}
+            />
+          </ProtectedRoute>
+        </Switch>
         <Footer />
         <AddPlacePopup
           isOpen={isAddPlacePopupOpen}
@@ -192,9 +284,15 @@ function App() {
           card={selectedCard}
           onClose={closeAllPopups}
         />
+
+        <InfoToolTip
+          isOpen={isInfoTooltipOpen}
+          onClose={closeAllPopups}
+          signedUp={signedUp}
+        />
       </CurrentUserContext.Provider>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

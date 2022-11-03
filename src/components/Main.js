@@ -1,11 +1,11 @@
-import pencil from "../images/edit.svg";
-import { useContext } from "react";
+import pencil from '../images/edit.svg'
+import { useContext } from 'react'
 
-import Card from "./Card";
-import { CurrentUserContext } from "../contexts/CurrentUserContext";
+import Card from './Card'
+import { CurrentUserContext } from '../contexts/CurrentUserContext'
 
 function Main(props) {
-  const currentUser = useContext(CurrentUserContext);
+  const currentUser = useContext(CurrentUserContext)
 
   return (
     <main className="content">
@@ -49,6 +49,6 @@ function Main(props) {
         ))}
       </section>
     </main>
-  );
+  )
 }
-export default Main;
+export default Main
