@@ -2,11 +2,11 @@ import success from '../images/success.svg'
 import fail from '../images/fail.svg'
 
 function InfoToolTip(props) {
-  const image = props.signedUp ? success : fail
-  const text = props.signedUp
+  const image = props.isSuccess ? success : fail
+  const text = props.isSuccess
     ? 'Success! You have now been registered.'
     : 'Oops, something went wrong! Please try again.'
-  const altText = props.signedUp ? 'Success' : 'Fail'
+  const altText = props.isSuccess ? 'Success' : 'Fail'
   return (
     <div
       className={`popup infoToolTip ${props.isOpen ? 'popup_visible' : ''}`}

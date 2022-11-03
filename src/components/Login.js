@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-function Login({ loggedIn, isWaiting, onSubmit, history }) {
+function Login({ loggedIn, isWaiting, onSubmit }) {
   const [inputs, setInputs] = useState({})
   const [errors, setErrors] = useState({})
   const [valid, setValid] = useState(false)

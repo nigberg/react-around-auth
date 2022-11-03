@@ -29,6 +29,7 @@ function App() {
   const [waiting, setWaiting] = useState(false)
   const [loggedIn, setLoggedIn] = useState(false)
   const [signedUp, setSignedUp] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
 
   const history = useHistory()
 
@@ -192,6 +193,7 @@ function App() {
         history.push('/')      
       })
       .catch((err) => {
+        setIsSuccess(false)
         setIsInfoTooltipOpen(true)
         console.log(err)
       })
@@ -206,14 +208,14 @@ function App() {
       .register(userData)
       .then((user) => {
         if (user.data._id) {
-          setSignedUp(true)
+          setIsSuccess(true)
           history.push('signin')
         } else{
-           setSignedUp(false)           
+           setIsSuccess(false)           
         }
       })
       .catch(() => {
-        setSignedUp(false)
+        setIsSuccess(false)
       })
       .finally(() => {
         setWaiting(false)
@@ -235,7 +237,7 @@ function App() {
           </Route>
           <Route path={'/signup'}>
             <Register
-              signedUp={signedUp}
+              isSuccess={isSuccess}
               isWaiting={waiting}
               onSubmit={handleSignup}
             />
@@ -289,7 +291,7 @@ function App() {
         <InfoToolTip
           isOpen={isInfoTooltipOpen}
           onClose={closeAllPopups}
-          signedUp={signedUp}
+          isSuccess={isSuccess}
         />
       </CurrentUserContext.Provider>
     </div>

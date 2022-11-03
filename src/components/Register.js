@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-function Login({ signedUp, isWaiting, onSubmit }) {
+function Register({ isSuccess, isWaiting, onSubmit }) {
   const [inputs, setInputs] = useState({})
   const [errors, setErrors] = useState({})
   const [valid, setValid] = useState(false)
@@ -34,7 +34,7 @@ function Login({ signedUp, isWaiting, onSubmit }) {
     setErrors({})
     setInputs({})
     setValid(false)
-  }, [signedUp])
+  }, [isSuccess])
 
   return (
     <div className="sign">
@@ -91,4 +91,4 @@ function Login({ signedUp, isWaiting, onSubmit }) {
   )
 }
 
-export default Login
+export default Register
