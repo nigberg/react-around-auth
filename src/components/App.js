@@ -27,8 +27,7 @@ function App() {
   const [userEmail, setUserEmail] = useState('')
   const [cards, setCards] = useState([])
   const [waiting, setWaiting] = useState(false)
-  const [loggedIn, setLoggedIn] = useState(false)
-  const [signedUp, setSignedUp] = useState(false)
+  const [loggedIn, setLoggedIn] = useState(false)  
   const [isSuccess, setIsSuccess] = useState(false)
 
   const history = useHistory()
