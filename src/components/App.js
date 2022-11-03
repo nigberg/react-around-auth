@@ -24,6 +24,7 @@ function App() {
   const [isInfoTooltipOpen, setIsInfoTooltipOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState({})
   const [currentUser, setCurrentUser] = useState({})
+  const [userEmail, setUserEmail] = useState('')
   const [cards, setCards] = useState([])
   const [waiting, setWaiting] = useState(false)
   const [loggedIn, setLoggedIn] = useState(false)
@@ -58,7 +59,7 @@ function App() {
       auth.validateToken(jwt)
       .then((res) => {
         if(res){
-          setCurrentUser({...currentUser, email: res.data.email})
+          setUserEmail(res.data.email)          
           setLoggedIn(true)
           history.push('/')          
         }
@@ -117,21 +118,19 @@ function App() {
     setIsEditProfilePopupOpen(false)
     setIsInfoTooltipOpen(false)
     setSelectedCard({})
+    document.removeEventListener('keydown', closeByEscape)    
   }
 
-  //closing modal windows by pressing escape key
-  useEffect(() => {
-    const closeByEscape = (e) => {
-      if (e.key === 'Escape') {
-        closeAllPopups()
-      }
+  //popups close by escape event listener
+  const closeByEscape = (e) => {
+    if (e.key === 'Escape') {
+      closeAllPopups()
     }
+  }
 
-    document.addEventListener('keydown', closeByEscape)
-
-    //event listener removing on unmounting
-    return () => document.removeEventListener('keydown', closeByEscape)
-  }, [])
+  useEffect(() => {
+    document.addEventListener('keydown', closeByEscape)      
+  }, [isEditProfilePopupOpen, isAddPlacePopupOpen, isEditAvatarPopupOpen, isCardPopupOpen, isInfoTooltipOpen])
 
   function handleUpdateUser({ name, about }) {
     setWaiting(true)
@@ -139,7 +138,7 @@ function App() {
       .editProfile({ name, about })
       .then((newUserInfo) => {
         console.log(waiting)
-        setCurrentUser(newUserInfo)
+        setCurrentUser(newUserInfo)              
         closeAllPopups()
       })
       .catch(console.log)
@@ -189,10 +188,11 @@ function App() {
       .then((user) => {
         localStorage.setItem('jwt', user.token)
         setLoggedIn(true)
-        setCurrentUser({...currentUser, email: userData.email})  
+        setUserEmail(userData.email)  
         history.push('/')      
       })
       .catch((err) => {
+        setIsInfoTooltipOpen(true)
         console.log(err)
       })
       .finally(() => {
@@ -207,6 +207,7 @@ function App() {
       .then((user) => {
         if (user.data._id) {
           setSignedUp(true)
+          history.push('signin')
         } else{
            setSignedUp(false)           
         }
@@ -223,16 +224,16 @@ function App() {
   return (
     <div className="page">
       <CurrentUserContext.Provider value={currentUser}>
-        <Header loggedIn={loggedIn} handleLogout={handleLogout} />
+        <Header loggedIn={loggedIn} userEmail={userEmail} handleLogout={handleLogout} />
         <Switch>
-          <Route exact path={'/signin'}>
+          <Route path={'/signin'}>
             <Login
               loggedIn={loggedIn}
               isWaiting={waiting}
               onSubmit={handleLogin}
             />
           </Route>
-          <Route exact path={'/signup'}>
+          <Route path={'/signup'}>
             <Register
               signedUp={signedUp}
               isWaiting={waiting}
