@@ -6,6 +6,7 @@ import PopupWithForm from './PopupWithForm'
 import EditProfilePopup from './EditProfilePopup'
 import EditAvatarPopup from './EditAvatarPopup'
 import AddPlacePopup from './AddPlacePopup'
+import ConfirmPopup from './ConfirmPopup'
 import { useState, useEffect } from 'react'
 import { api } from '../utils/api'
 import { auth } from '../utils/auth'
@@ -22,12 +23,14 @@ function App() {
   const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] = useState(false)
   const [isCardPopupOpen, setIsCardPopupOpen] = useState(false)
   const [isInfoTooltipOpen, setIsInfoTooltipOpen] = useState(false)
+  const [isConfirmPopupOpen, setIsConfirmPopupOpen] = useState(false)
   const [selectedCard, setSelectedCard] = useState({})
   const [currentUser, setCurrentUser] = useState({})
   const [userEmail, setUserEmail] = useState('')
   const [cards, setCards] = useState([])
+  const [cardToDelete, setCardToDelete] = useState(null)
   const [waiting, setWaiting] = useState(false)
-  const [loggedIn, setLoggedIn] = useState(false)  
+  const [loggedIn, setLoggedIn] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
 
   const history = useHistory()
@@ -41,7 +44,7 @@ function App() {
       })
       .catch(console.log)
   }, [])
-  
+
   //Cards fetching
   useEffect(() => {
     api
@@ -54,19 +57,20 @@ function App() {
 
   //Token check
   useEffect(() => {
-    const jwt=localStorage.getItem('jwt')
-    if(jwt){
-      auth.validateToken(jwt)
-      .then((res) => {
-        if(res){
-          setUserEmail(res.data.email)          
-          setLoggedIn(true)
-          history.push('/')          
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
+    const jwt = localStorage.getItem('jwt')
+    if (jwt) {
+      auth
+        .validateToken(jwt)
+        .then((res) => {
+          if (res) {
+            setUserEmail(res.data.email)
+            setLoggedIn(true)
+            history.push('/')
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     }
   }, [])
 
@@ -103,12 +107,22 @@ function App() {
   }
 
   const handleCardDelete = (card) => {
+    setWaiting(true)    
     api
       .deleteCard(card._id)
       .then(() => {
         setCards(cards.filter((item) => item._id !== card._id))
       })
       .catch(console.log)
+      .finally(() => {
+        closeAllPopups()
+        setWaiting(false)
+      })
+  }
+
+  const handleDeleteButtonClick = (card) => {
+    setIsConfirmPopupOpen(true)
+    setCardToDelete(card)
   }
 
   const closeAllPopups = () => {
@@ -117,8 +131,9 @@ function App() {
     setIsCardPopupOpen(false)
     setIsEditProfilePopupOpen(false)
     setIsInfoTooltipOpen(false)
+    setIsConfirmPopupOpen(false)
     setSelectedCard({})
-    document.removeEventListener('keydown', closeByEscape)    
+    document.removeEventListener('keydown', closeByEscape)
   }
 
   //popups close by escape event listener
@@ -128,9 +143,19 @@ function App() {
     }
   }
 
+  let isAnyPopupOpen =
+    isEditProfilePopupOpen ||
+    isAddPlacePopupOpen ||
+    isEditAvatarPopupOpen ||
+    isCardPopupOpen ||
+    isInfoTooltipOpen ||
+    isConfirmPopupOpen
+
   useEffect(() => {
-    document.addEventListener('keydown', closeByEscape)      
-  }, [isEditProfilePopupOpen, isAddPlacePopupOpen, isEditAvatarPopupOpen, isCardPopupOpen, isInfoTooltipOpen])
+    if (isAnyPopupOpen) {
+      document.addEventListener('keydown', closeByEscape)
+    }
+  }, [isAnyPopupOpen])
 
   function handleUpdateUser({ name, about }) {
     setWaiting(true)
@@ -138,7 +163,7 @@ function App() {
       .editProfile({ name, about })
       .then((newUserInfo) => {
         console.log(waiting)
-        setCurrentUser(newUserInfo)              
+        setCurrentUser(newUserInfo)
         closeAllPopups()
       })
       .catch(console.log)
@@ -176,9 +201,9 @@ function App() {
   }
 
   function handleLogout() {
-    localStorage.removeItem('jwt');
+    localStorage.removeItem('jwt')
     setLoggedIn(false)
-    history.push('/login');
+    history.push('/login')
   }
 
   function handleLogin(userData) {
@@ -188,8 +213,8 @@ function App() {
       .then((user) => {
         localStorage.setItem('jwt', user.token)
         setLoggedIn(true)
-        setUserEmail(userData.email)  
-        history.push('/')      
+        setUserEmail(userData.email)
+        history.push('/')
       })
       .catch((err) => {
         setIsSuccess(false)
@@ -197,7 +222,7 @@ function App() {
         console.log(err)
       })
       .finally(() => {
-        setWaiting(false)        
+        setWaiting(false)
       })
   }
 
@@ -209,8 +234,8 @@ function App() {
         if (user.data._id) {
           setIsSuccess(true)
           history.push('signin')
-        } else{
-           setIsSuccess(false)           
+        } else {
+          setIsSuccess(false)
         }
       })
       .catch(() => {
@@ -225,7 +250,11 @@ function App() {
   return (
     <div className="page">
       <CurrentUserContext.Provider value={currentUser}>
-        <Header loggedIn={loggedIn} userEmail={userEmail} handleLogout={handleLogout} />
+        <Header
+          loggedIn={loggedIn}
+          userEmail={userEmail}
+          handleLogout={handleLogout}
+        />
         <Switch>
           <Route path={'/signin'}>
             <Login
@@ -249,7 +278,7 @@ function App() {
               onEditAvatarClick={handleEditAvatarClick}
               onAddPlaceClick={handleAddPlaceClick}
               onCardLike={handleCardLike}
-              onCardDelete={handleCardDelete}
+              onCardDelete={handleDeleteButtonClick}
             />
           </ProtectedRoute>
         </Switch>
@@ -266,12 +295,6 @@ function App() {
           onClose={closeAllPopups}
           onUpdateUser={handleUpdateUser}
           isWaiting={waiting}
-        />
-
-        <PopupWithForm
-          name="confirm"
-          title="Are you sure?"
-          onClose={closeAllPopups}
         />
 
         <EditAvatarPopup
@@ -291,6 +314,14 @@ function App() {
           isOpen={isInfoTooltipOpen}
           onClose={closeAllPopups}
           isSuccess={isSuccess}
+        />
+
+        <ConfirmPopup
+        isOpen={isConfirmPopupOpen}
+        onClose={closeAllPopups}
+        isWaiting={waiting}
+        onCardDelete={handleCardDelete}
+        cardToDelete={cardToDelete}
         />
       </CurrentUserContext.Provider>
     </div>
